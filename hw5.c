@@ -5,9 +5,11 @@ int allocatedChunks = 0;
 int allocatedBytes = 0;
 int totalBytes = 0;
 
-int chunkSizes[256];
-char* chunkPointerHead;
-char* chunkPointerTail;
+
+int totalAllocatedMemory =0;
+int chunkSizes[512];
+char* chunkPointers[512];
+
 char* freeMemoryStart;
 
 char* shared_memory = NULL;
@@ -18,8 +20,8 @@ char* shared_data = NULL;
   Mode 1 = WorstFit
   Mode 2 = FirstFit
   Mode 3 = NextFit
-  */
-char* find_free_chunk(char* chunks,int bytesToAllocate, int mode){
+*/
+char* find_free_chunk(char* chunks,int bytesToAllocate, int mode, int* adressIndex){
     if(mode==0){
         int bestPointerIndex = 0;
         int bestSize = SHARED_MEMORY_SIZE;
@@ -28,17 +30,15 @@ char* find_free_chunk(char* chunks,int bytesToAllocate, int mode){
         int i;
         for(i=0;i<chunkAmount;i++) {
             if(chunkSizes[i]==0) continue;
-            int newSize = bytesToAllocate - chunkSizes[i];
+            int newSize = chunkSizes[i] - bytesToAllocate ;
             if(newSize<bestSize&&newSize>=0) {
-                bestSize = chunkSizes[i];
+                bestSize = newSize;
                 bestPointerIndex = i;
             }
         }
         if(bestSize==SHARED_MEMORY_SIZE) return NULL;
-        retVal = &chunkPointerHead[bestPointerIndex];
-        chunkSizes[bestPointerIndex] = 0;
-        printf("Best Fit Chunk Size:%d\n",bestSize);
-        return retVal;
+        *adressIndex = bestPointerIndex;
+        return chunkPointers[bestPointerIndex];
     }
     else if(mode ==1){
 
@@ -51,6 +51,24 @@ char* find_free_chunk(char* chunks,int bytesToAllocate, int mode){
     }
 }
 
+void allocateMemory(char* memoryAdress, int bytesToAllocate, int adressIndex){
+
+    int i = 1;
+    
+    printf("Adress index: %d\n",adressIndex);
+    printf("Adress Size:%d\n",chunkSizes[adressIndex]);
+    for(i=0;i<bytesToAllocate;i++) memoryAdress[i] = 'A';
+
+    int bytesTilCurAdress = 0;
+    int leftOverBytes = (chunkSizes[adressIndex]-bytesToAllocate);
+    if(leftOverBytes>0){
+        for(i=0;i<adressIndex;i++) bytesTilCurAdress+=chunkSizes[i];
+        chunkPointers[chunkAmount] = &memoryAdress[bytesToAllocate];
+        chunkSizes[chunkAmount] = leftOverBytes;
+        chunkSizes[adressIndex]=0;
+        chunkAmount++;
+    }
+}
 
 void startMemory(){
     shared_memory = mmap(NULL,SHARED_MEMORY_SIZE,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANONYMOUS,-1,0);
@@ -62,8 +80,8 @@ int getArguments(char* argv[],char* chunk, char* size){
     char* argument = (char* )malloc(sizeof(argv[1]));
     char* argument1= (char* )malloc(sizeof(argv[2]));
 
-    argument = argv[1];
-    argument1 = argv[2];
+    strcpy(argument,argv[1]);
+    strcpy(argument1,argv[2]);
 
     if(strncmp(argument,CHUNK_CHECK,2)!=0){
         printf("First input paramater is incorrect.\n");
@@ -74,10 +92,11 @@ int getArguments(char* argv[],char* chunk, char* size){
         return -1;
     }
     int j;
-    for(j=0;j<2;j++) strcpy(chunk,argument);
-    for(j=0;j<2;j++) strcpy(size,argument1);
+    for(j=0;j<2;j++) argument = strsep(&argv[1],"=");
+    for(j=0;j<2;j++) argument1 = strsep(&argv[2],"=");
 
-    
+    strcpy(chunk,argument);
+    strcpy(size,argument1);
 }
 
 void allocateChunk(int* chunkValue){
@@ -98,9 +117,10 @@ int main(int argc, char* argv[]){
     getArguments(argv,chunk,size);
     FILE* chunkFile;
     FILE* sizeFile;
-    chunkFile = fopen("chunks1","r");
-    sizeFile = fopen("sizes1","r");
-    if(chunkFile==NULL||sizeFile==NULL)   return -1;
+    
+    chunkFile = fopen(chunk,"r");
+    sizeFile = fopen(size,"r");
+    if(chunkFile==NULL||sizeFile==NULL)  return -1;
     
     startMemory();
     int i =0;
@@ -115,29 +135,39 @@ int main(int argc, char* argv[]){
 
     int bookkeeping = SHARED_MEMORY_SIZE - totalBytes;
 
-    chunkPointerHead = &shared_data[0];
-    
-    chunkPointerTail = &shared_data[chunkAmount];
-
     freeMemoryStart = &shared_data[bookkeeping];
 
     int j;
     for(j = 0;j<chunkAmount;j++){
         freeMemoryStart[allocatedBytes] = 'S';
-        chunkPointerHead[j] = freeMemoryStart[allocatedBytes];
+        chunkPointers[j] = &freeMemoryStart[allocatedBytes];
         allocatedBytes += chunkSizes[j];
     }
-   for(j = 0;j<totalBytes;j++){
-        if(freeMemoryStart[j]!=0) printf("%c",freeMemoryStart[j]);
-        else printf("0");
-    }
-    /*
-     fscanf(sizeFile,"%d",&bytesToAllocate);
+    
+    fscanf(sizeFile,"%d",&bytesToAllocate);
     while (!feof (sizeFile))
     {  
-      find_free_chunk(chunkPointerHead,bytesToAllocate,0);
+      int adressIndex;
+      char* memoryAdress;
+      if((memoryAdress = find_free_chunk(shared_data,bytesToAllocate,0,&adressIndex))==NULL){
+          printf("Could not allocate chunk with size %d\n",bytesToAllocate);
+      }
+      else{
+          allocateMemory(memoryAdress,bytesToAllocate,adressIndex);
+          totalAllocatedMemory+=bytesToAllocate;
+      }
       fscanf (sizeFile, "%d", &bytesToAllocate);      
-    }*/
+    }
+
+    int aNumbers = 0;
+    for(int i=0;i<totalBytes;i++){
+        if(freeMemoryStart[i]==0)printf("0");
+        else {
+            aNumbers++;
+            printf("%c",freeMemoryStart[i]); }
+    }
+
+    printf("Allocated bytes in memory: %d\n",aNumbers);
     
     return 0;
 
