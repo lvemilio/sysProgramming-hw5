@@ -53,7 +53,7 @@ char* find_free_chunk(char* chunks,int bytesToAllocate, int mode, int* adressInd
 
 void allocateMemory(char* memoryAdress, int bytesToAllocate, int adressIndex){
 
-    int i = 1;
+    int i;
     
     printf("Adress index: %d\n",adressIndex);
     printf("Adress Size:%d\n",chunkSizes[adressIndex]);
@@ -163,11 +163,11 @@ int main(int argc, char* argv[]){
     for(int i=0;i<totalBytes;i++){
         if(freeMemoryStart[i]==0)printf("0");
         else {
-            aNumbers++;
+            if(freeMemoryStart[i]=='A')aNumbers++;
             printf("%c",freeMemoryStart[i]); }
     }
 
-    printf("Allocated bytes in memory: %d\n",aNumbers);
+    printf("\nAllocated bytes in memory: %d\n",totalAllocatedMemory);
     
     return 0;
 
