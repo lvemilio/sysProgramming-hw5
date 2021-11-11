@@ -26,7 +26,6 @@ char* find_free_chunk(char* chunks,int bytesToAllocate, int mode, int* adressInd
         int bestPointerIndex = 0;
         int bestSize = SHARED_MEMORY_SIZE;
 
-        char* retVal;
         int i;
         for(i=0;i<chunkAmount;i++) {
             if(chunkSizes[i]==0) continue;
@@ -41,7 +40,21 @@ char* find_free_chunk(char* chunks,int bytesToAllocate, int mode, int* adressInd
         return chunkPointers[bestPointerIndex];
     }
     else if(mode ==1){
+        int bestPointerIndex = 0;
+        int bestSize = 0;
 
+        int i;
+        for(i=0;i<chunkAmount;i++) {
+            if(chunkSizes[i]==0) continue;
+            int newSize = chunkSizes[i] - bytesToAllocate ;
+            if(newSize>bestSize) {
+                bestSize = newSize;
+                bestPointerIndex = i;
+            }
+        }
+        if(bestSize==0) return NULL;
+        *adressIndex = bestPointerIndex;
+        return chunkPointers[bestPointerIndex];
     }
     else if(mode==2){
 
@@ -53,7 +66,7 @@ char* find_free_chunk(char* chunks,int bytesToAllocate, int mode, int* adressInd
 
 void allocateMemory(char* memoryAdress, int bytesToAllocate, int adressIndex){
 
-    int i;
+    int i = 1;
     
     printf("Adress index: %d\n",adressIndex);
     printf("Adress Size:%d\n",chunkSizes[adressIndex]);
