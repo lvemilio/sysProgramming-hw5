@@ -85,7 +85,7 @@ void allocateMemory(char* memoryAdress, int bytesToAllocate, int adressIndex){
 
 void startMemory(){
     shared_memory = mmap(NULL,SHARED_MEMORY_SIZE,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANONYMOUS,-1,0);
-    shared_data = (char*)(shared_memory +sizeof(int));
+    shared_data = (char*)(shared_memory +sizeof(char));
 }
 
 
@@ -162,7 +162,7 @@ int main(int argc, char* argv[]){
     {  
       int adressIndex;
       char* memoryAdress;
-      if((memoryAdress = find_free_chunk(shared_data,bytesToAllocate,0,&adressIndex))==NULL){
+      if((memoryAdress = find_free_chunk(freeMemoryStart,bytesToAllocate,0,&adressIndex))==NULL){
           printf("Could not allocate chunk with size %d\n",bytesToAllocate);
       }
       else{

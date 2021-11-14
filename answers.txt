@@ -1,3 +1,54 @@
 Your answers go here!
 
 Also start by noting if You have a teammate and if I should check this git repository or Your teammates for the grading of code.
+
+Our team - Emils Vigants, Krists Ratseps 
+Repository - Work seen in Emils Vigants repository
+
+Workload seperation:
+Memory setup (all the coding done before creating algorithms), general analysis overview, best fit algorithm analysis - Emils Vigants
+Next fit, First fit algorithms and analysis, overall conclusions - Krists Ratseps
+
+ANWSERS:
+
+ALGORITHM DESCRIPTION:
+
+BEST FIT:
+This algorithm goes over all the available chunk sizes stored in the size array and finds the chunk whose size is
+closest to the size of memory actually needs to be allocated. The algorithm runs in linear time O(n) because it needs to scan the whole array 
+for the best chunk available. Once that chunk is found, its pointer is returned.
+
+WORST FIT:
+This algorithm works nearly the same way as the best fit algorithm, but the only difference is that the worst fit algorithm finds the chunks whose size is the farthest 
+from the size that needs to be allocated. This, in turn, means that the worst fit algorithm will always find the largest chunk available in the list. The algorithm also runs 
+in O(n) time.
+
+----Add other algorithms here----
+
+
+ALGORITHM ANALYSIS:
+
+GENERAL METHODS AND NOTES:
+To test the capabilities of the algorithm, we took 3 main factors into account - the size of bytes the algorithm was able to allocate, the size of the chunks the algorithm was 
+not able to allocate and the runtime of the program. 
+For every algorithm we ran each chunk file against each of the size files and noted the 3 measurments mentioned above. The runtime was measured by the time.sh script seen in the 
+directory.
+When creating the chunk files and size files we tried to create different kinds of memory fragmentation scenarios. As many scenarios were already covered in the given files, the only
+other case we could think of is visible in chunks4 and sizes4. The chunks4 file covers the scenario where the memory is distributed completely evenly. The sizes4 file describes a situation where there
+is a large difference in the memory requested within in each sequental call.
+
+BEST FIT:
+The best fit algorithm performed the best when the chunks were taken from the chunks2 file. 
+When the program used this file it was able to allocate nearly all the chunks (usually it was not able to find a place for 3-4 sizes)
+and the sizes that it was not able to allocate were in most times larger than the chunks seen in the chunk file. 
+The total average memory the algorithm was able to allocate with this chunk file ranged between 750-830, which is not bad considering that most 
+size files had nearly 900 bytes to allocate together.
+However, when the memory was really fragmented to begin with (like in the rest of the chunk files) the algorithm did not fare so well. 
+Although with file chunks1 the algorithm was able to allocate a total average of around 700-800 bytes, when experimenting with 
+the rest of the chunk files the algorithm was able to allocate only around 500-600 bytes. A large part of this may be due to the fact that all other 
+chunk files did not have chunks as large as seen in chunks2. We made this conclusion because most chunk sizes the algorithm was not able to allocate were relatively large. 
+The runtime for the algorithm in most cases was around 6-7 milliseconds. However, when using the chunk2 file the runtime was 10-12 milliseconds. 
+We attrubute this to the fact that the chunks2 file initially gives very large memory chunks which need to be split up, thus,
+there is a lot more pointer redrawing and memory allocation. 
+
+
