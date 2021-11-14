@@ -7,7 +7,7 @@ Repository - Work seen in Emils Vigants repository
 
 Workload seperation:
 Memory setup (all the coding done before creating algorithms), general analysis overview, best fit algorithm analysis - Emils Vigants
-Next fit, First fit algorithms and analysis, overall conclusions - Krists Ratseps
+Next fit, First fit, Worst fit algorithm and analysis, overall conclusions - Krists Ratseps
 
 ANWSERS:
 
